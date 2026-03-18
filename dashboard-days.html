@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Дашборд по дням — Каталог (фев/мар 2026)</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
+  <style>
+    :root{
+      --bg:#070a12;
+      --border:rgba(148,163,184,.20);
+      --text:#e5e7eb;
+      --muted:#9ca3af;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      padding:22px;
+      font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+      background:
+        radial-gradient(900px 420px at 18% 8%, rgba(79,70,229,.20), transparent 65%),
+        radial-gradient(900px 420px at 82% 18%, rgba(249,115,22,.14), transparent 60%),
+        radial-gradient(900px 520px at 55% 90%, rgba(56,189,248,.10), transparent 60%),
+        linear-gradient(180deg, #050713 0%, #020617 60%, #020617 100%);
+      color:var(--text);
+    }
+    .top{
+      display:flex;
+      align-items:flex-end;
+      justify-content:space-between;
+      gap:14px;
+      margin-bottom:14px;
+      flex-wrap:wrap;
+    }
+    h1{margin:0;font-size:22px;font-weight:650;letter-spacing:.2px}
+    .sub{
+      margin-top:6px;
+      color:var(--muted);
+      font-size:12.5px;
+      line-height:1.35;
+    }
+    a{color:#a5b4fc;text-decoration:none;border-bottom:1px dashed rgba(165,180,252,.5)}
+    .controls{
+      display:flex;
+      gap:10px;
+      align-items:center;
+      flex-wrap:wrap;
+    }
+    .control{
+      display:flex;
+      gap:8px;
+      align-items:center;
+      padding:8px 10px;
+      border-radius:12px;
+      background:linear-gradient(135deg, rgba(2,6,23,.85), rgba(15,23,42,.55));
+      border:1px solid var(--border);
+      box-shadow:0 18px 55px rgba(0,0,0,.35);
+    }
+    .label{font-size:11px;color:var(--muted);letter-spacing:.08em;text-transform:uppercase}
+    select{
+      background:rgba(15,23,42,.75);
+      color:var(--text);
+      border:1px solid rgba(148,163,184,.28);
+      padding:6px 8px;
+      border-radius:10px;
+      font-size:12px;
+      outline:none;
+    }
+    .grid{
+      display:grid;
+      grid-template-columns:repeat(2, minmax(0,1fr));
+      gap:14px;
+      margin-top:10px;
+    }
+    @media (max-width: 980px){ .grid{grid-template-columns:minmax(0,1fr)} }
+    .card{
+      background:radial-gradient(circle at top left, rgba(15,23,42,.95) 0, rgba(2,6,23,.92) 70%);
+      border:1px solid var(--border);
+      border-radius:16px;
+      padding:14px 16px 12px;
+      box-shadow:0 20px 60px rgba(0,0,0,.45);
+    }
+    .card-head{
+      display:flex;
+      align-items:baseline;
+      justify-content:space-between;
+      gap:12px;
+      margin-bottom:10px;
+    }
+    .title{
+      font-size:13px;
+      letter-spacing:.08em;
+      text-transform:uppercase;
+      color:var(--muted);
+    }
+    .pill{
+      font-size:11px;
+      color:var(--muted);
+      border:1px solid rgba(148,163,184,.25);
+      padding:2px 8px;
+      border-radius:999px;
+      background:rgba(2,6,23,.55);
+      white-space:nowrap;
+    }
+    canvas{width:100% !important;height:290px !important}
+    .note{margin-top:6px;font-size:11px;color:var(--muted);}
+    .err{
+      border: 1px solid rgba(248,113,113,.35);
+      background: rgba(127,29,29,.20);
+      color: #fecaca;
+      padding: 10px 12px;
+      border-radius: 14px;
+      margin-top: 10px;
+      font-size: 12px;
+      line-height: 1.35;
+      white-space: pre-wrap;
+      display:none;
+    }
+  </style>
+  <!-- Формат и UX — как в VK/dashboard-days.html -->
+</head>
+<body>
+  <div class="top">
+    <div>
+      <h1>Каталог: дашборд по дням (фев/мар 2026)</h1>
+      <div class="sub" id="sub">
+        Графики в разрезе дней. Источник данных — локальный файл <code>daily-data.json</code> (если он рядом с этим файлом).
+        ← <a href="./dashboard.html">назад к месячному сравнению</a>
+      </div>
+    </div>
+
+    <div class="controls">
+      <div class="control">
+        <div class="label">Проект</div>
+        <select id="projectSelect"></select>
+      </div>
+      <div class="control">
+        <div class="label">Метрика</div>
+        <select id="metricSelect">
+          <option value="leads">Лиды (шт)</option>
+          <option value="calls">Дозвоны (шт)</option>
+          <option value="contactPct">% дозваниваемости</option>
+          <option value="presentations">Презентации (шт)</option>
+          <option value="presentationsPct">% презентаций</option>
+          <option value="qualified">Квал (шт)</option>
+          <option value="qualifiedPct">% квалификации</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <div id="loadError" class="err"></div>
+
+  <div class="grid">
+    <div class="card">
+      <div class="card-head">
+        <div class="title" id="chartTitle">Метрика по дням</div>
+        <span class="pill">март 26 vs фев 26</span>
+      </div>
+      <canvas id="dailyChart"></canvas>
+      <div class="note">Линии: март и февраль. Ось X — день месяца.</div>
+    </div>
+
+    <div class="card">
+      <div class="card-head">
+        <div class="title">Разница (март − февраль)</div>
+        <span class="pill">по дням</span>
+      </div>
+      <canvas id="deltaChart"></canvas>
+      <div class="note">
+        Это <b>март − февраль</b> для каждого дня: положительное значение значит, что <b>в марте больше</b>, отрицательное — что <b>в феврале больше</b>.
+        Для метрик в % разница тоже в <b>процентных пунктах</b>.
+      </div>
+    </div>
+  </div>
+
+  <script>
+    Chart.register(ChartDataLabels);
+
+    const pct = (num, den) => den ? (num / den) * 100 : 0;
+    const round1 = (v) => Math.round(v * 10) / 10;
+    const fmtRu = (v) => (typeof v === 'number' ? v.toLocaleString('ru-RU') : (v ?? ''));
+    const fmtPct = (v) => (round1(v)).toString().replace('.', ',') + '%';
+
+    // Формат данных в daily-data.json (как в VK):
+    // {
+    //   "days": [1,2,3,...],
+    //   "projects": {
+    //     "Сеосейлс": { "feb": {leads:[], calls:[], presentations:[], qualified:[]}, "mar": {...} },
+    //     ...
+    //   }
+    // }
+    // Если открыто как file://, fetch локальных файлов может быть заблокирован — тогда используем EXAMPLE.
+    const EXAMPLE = {
+      "days": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17],
+      "projects": {
+        "Сеосейлс": {
+          "feb": { "leads": [0, 0, 0, 0, 18, 17, 6, 0, 21, 22, 30, 8, 14, 6, 0, 33, 10], "calls": [0, 0, 0, 0, 6, 11, 5, 0, 12, 8, 21, 3, 4, 2, 0, 15, 4], "presentations": [0, 0, 0, 0, 4, 7, 1, 0, 3, 3, 5, 2, 2, 0, 0, 3, 1], "qualified": [0, 0, 0, 0, 0, 5, 1, 0, 0, 2, 4, 0, 0, 0, 0, 5, 0] },
+          "mar": { "leads": [0, 23, 10, 12, 68, 37, 0, 0, 23, 26, 16, 17, 6, 3, 0, 17, 15], "calls": [0, 7, 6, 5, 33, 21, 0, 0, 6, 9, 4, 10, 1, 0, 0, 5, 6], "presentations": [0, 1, 3, 4, 10, 9, 0, 0, 4, 5, 3, 6, 3, 1, 0, 5, 4], "qualified": [0, 0, 1, 3, 8, 2, 0, 0, 0, 3, 1, 3, 0, 0, 0, 2, 2] }
+        },
+        "Kineiro": {
+          "feb": { "leads": [0, 50, 36, 26, 21, 18, 10, 0, 46, 101, 34, 38, 21, 20, 0, 78, 21], "calls": [0, 29, 20, 15, 10, 7, 6, 0, 27, 43, 22, 23, 14, 7, 0, 42, 9], "presentations": [0, 14, 17, 19, 11, 13, 2, 0, 23, 15, 20, 18, 7, 0, 2, 19, 12], "qualified": [0, 6, 7, 7, 1, 0, 0, 0, 7, 5, 3, 4, 2, 0, 0, 11, 0] },
+          "mar": { "leads": [0, 71, 33, 32, 26, 21, 0, 0, 50, 91, 41, 50, 35, 21, 0, 64, 72], "calls": [0, 43, 21, 14, 16, 12, 0, 0, 22, 47, 18, 17, 17, 4, 0, 30, 31], "presentations": [0, 6, 14, 4, 7, 1, 0, 0, 4, 11, 10, 8, 5, 0, 0, 8, 3], "qualified": [0, 4, 1, 1, 1, 0, 0, 0, 3, 6, 3, 2, 1, 1, 0, 6, 7] }
+        },
+        "Урман Билд": {
+          "feb": { "leads": [0, 39, 27, 15, 22, 18, 1, 0, 53, 29, 26, 55, 18, 38, 0, 101, 22], "calls": [0, 29, 16, 9, 12, 11, 1, 0, 32, 16, 10, 34, 10, 25, 0, 49, 6], "presentations": [0, 23, 27, 21, 28, 25, 9, 0, 36, 42, 35, 29, 26, 10, 0, 65, 30], "qualified": [0, 7, 2, 3, 2, 1, 0, 0, 4, 0, 3, 0, 1, 2, 0, 3, 1] },
+          "mar": { "leads": [0, 30, 12, 19, 18, 37, 26, 0, 32, 33, 18, 12, 12, 4, 0, 26, 13], "calls": [0, 14, 8, 10, 9, 20, 13, 0, 16, 12, 9, 6, 9, 1, 0, 16, 4], "presentations": [0, 1, 7, 1, 5, 8, 5, 0, 2, 4, 5, 2, 1, 3, 0, 4, 1], "qualified": [0, 1, 0, 0, 1, 1, 3, 0, 0, 2, 2, 2, 1, 1, 0, 4, 1] }
+        }
+      }
+    };
+
+    const METRICS = {
+      leads: { title: 'Лиды (шт) по дням', kind: 'number' },
+      calls: { title: 'Дозвоны (шт) по дням', kind: 'number' },
+      presentations: { title: 'Презентации (шт) по дням', kind: 'number' },
+      qualified: { title: 'Квал (шт) по дням', kind: 'number' },
+      contactPct: { title: '% дозваниваемости по дням', kind: 'pct' },
+      presentationsPct: { title: '% презентаций по дням', kind: 'pct' },
+      qualifiedPct: { title: '% квалификации по дням', kind: 'pct' },
+    };
+
+    function baseOptions(kind) {
+      const isPct = kind === 'pct';
+      return {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { labels: { color: '#e5e7eb', font: { size: 11 } } },
+          tooltip: {
+            backgroundColor: 'rgba(15,23,42,0.95)',
+            borderColor: 'rgba(55,65,81,1)',
+            borderWidth: 1,
+            titleColor: '#e5e7eb',
+            bodyColor: '#e5e7eb',
+            padding: 8,
+            callbacks: {
+              label: (ctx) => {
+                const v = ctx.parsed.y;
+                return ctx.dataset.label + ': ' + (isPct ? fmtPct(v) : fmtRu(v));
+              }
+            }
+          },
+          datalabels: { display: false }
+        },
+        scales: {
+          x: { ticks: { color: '#9ca3af', font: { size: 11 } }, grid: { color: 'rgba(31,41,55,0.35)' } },
+          y: {
+            beginAtZero: true,
+            ticks: { color: '#9ca3af', font: { size: 11 }, callback: (v) => isPct ? (v + '%') : v },
+            grid: { color: 'rgba(31,41,55,0.35)' }
+          }
+        }
+      };
+    }
+
+    function mkLineChart(ctx, labels, febData, marData, kind, metricKey) {
+      const isPct = kind === 'pct';
+      return new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels,
+          datasets: [
+            {
+              label: 'март 26',
+              data: marData,
+              borderColor: 'rgba(79,70,229,1)',
+              backgroundColor: 'rgba(79,70,229,.15)',
+              pointRadius: 2.5,
+              pointHoverRadius: 3.5,
+              tension: 0.25,
+              fill: true
+            },
+            {
+              label: 'фев 26',
+              data: febData,
+              borderColor: 'rgba(249,115,22,1)',
+              backgroundColor: 'rgba(249,115,22,.12)',
+              pointRadius: 2.5,
+              pointHoverRadius: 3.5,
+              tension: 0.25,
+              fill: true
+            }
+          ]
+        },
+        options: {
+          ...baseOptions(kind),
+          plugins: {
+            ...baseOptions(kind).plugins,
+            datalabels: {
+              color: '#e5e7eb',
+              align: 'top',
+              anchor: 'end',
+              offset: 4,
+              font: { size: 10, weight: '600' },
+              display: (ctx2) => {
+                const v = ctx2.dataset.data?.[ctx2.dataIndex];
+                if (metricKey === 'leads') return typeof v === 'number' && v !== 0;
+                return ctx2.dataIndex === (ctx2.dataset.data?.length ?? 0) - 1;
+              },
+              formatter: (v) => {
+                if (typeof v !== 'number') return '';
+                return isPct ? fmtPct(v) : fmtRu(v);
+              }
+            }
+          }
+        }
+      });
+    }
+
+    function mkDeltaChart(ctx, labels, delta, kind) {
+      const isPct = kind === 'pct';
+      return new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels,
+          datasets: [
+            {
+              label: 'Δ (март − фев)',
+              data: delta,
+              backgroundColor: delta.map(v => (typeof v === 'number' && v >= 0) ? 'rgba(34,197,94,.75)' : 'rgba(248,113,113,.75)'),
+              borderColor: delta.map(v => (typeof v === 'number' && v >= 0) ? 'rgba(74,222,128,1)' : 'rgba(252,165,165,1)'),
+              borderWidth: 1.2,
+              borderRadius: 6
+            }
+          ]
+        },
+        options: {
+          ...baseOptions(kind),
+          plugins: {
+            ...baseOptions(kind).plugins,
+            datalabels: {
+              color: '#e5e7eb',
+              anchor: 'end',
+              align: 'end',
+              offset: -2,
+              font: { size: 10, weight: '500' },
+              formatter: (v) => {
+                if (typeof v !== 'number') return '';
+                return isPct ? fmtPct(v) : fmtRu(v);
+              }
+            }
+          }
+        }
+      });
+    }
+
+    function ensureDerived(projectData) {
+      for (const m of ['feb','mar']) {
+        const leadArr = projectData[m]?.leads || [];
+        const callsArr = projectData[m]?.calls || [];
+        const presArr = projectData[m]?.presentations || [];
+        const kvalArr = projectData[m]?.qualified || [];
+
+        projectData[m].contactPct = (projectData[m].contactPct && projectData[m].contactPct.length)
+          ? projectData[m].contactPct
+          : callsArr.map((c,i) => pct(c, leadArr[i]));
+        projectData[m].presentationsPct = (projectData[m].presentationsPct && projectData[m].presentationsPct.length)
+          ? projectData[m].presentationsPct
+          : presArr.map((p,i) => pct(p, leadArr[i]));
+        projectData[m].qualifiedPct = (projectData[m].qualifiedPct && projectData[m].qualifiedPct.length)
+          ? projectData[m].qualifiedPct
+          : kvalArr.map((k,i) => pct(k, leadArr[i]));
+      }
+      return projectData;
+    }
+
+    let dailyChart, deltaChart;
+    let DATA;
+
+    function getProjectNames() { return Object.keys(DATA.projects || {}); }
+    function getSeries(projectName, metricKey) {
+      const proj = ensureDerived(DATA.projects[projectName] || {});
+      const feb = (proj.feb && proj.feb[metricKey]) ? proj.feb[metricKey] : [];
+      const mar = (proj.mar && proj.mar[metricKey]) ? proj.mar[metricKey] : [];
+      return { feb, mar };
+    }
+
+    function updateCharts() {
+      const projectName = document.getElementById('projectSelect').value;
+      const metricKey = document.getElementById('metricSelect').value;
+      const meta = METRICS[metricKey] || METRICS.leads;
+
+      document.getElementById('chartTitle').textContent = meta.title + ' — ' + projectName;
+
+      const labels = (DATA.days || []).map(d => String(d));
+      const { feb, mar } = getSeries(projectName, metricKey);
+
+      const safeFeb = labels.map((_, i) => typeof feb[i] === 'number' ? feb[i] : null);
+      const safeMar = labels.map((_, i) => typeof mar[i] === 'number' ? mar[i] : null);
+      const delta = labels.map((_, i) => {
+        const a = safeMar[i], b = safeFeb[i];
+        if (typeof a !== 'number' || typeof b !== 'number') return null;
+        return a - b;
+      });
+
+      if (dailyChart) dailyChart.destroy();
+      if (deltaChart) deltaChart.destroy();
+
+      dailyChart = mkLineChart(
+        document.getElementById('dailyChart'),
+        labels,
+        safeFeb,
+        safeMar,
+        meta.kind,
+        metricKey
+      );
+      deltaChart = mkDeltaChart(
+        document.getElementById('deltaChart'),
+        labels,
+        delta,
+        meta.kind
+      );
+    }
+
+    async function loadData() {
+      try {
+        if (location.protocol === 'file:') return { data: EXAMPLE, usedExample: true };
+        const res = await fetch('./daily-data.json', { cache: 'no-store' });
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        const json = await res.json();
+        return { data: json, usedExample: false };
+      } catch (e) {
+        return { data: EXAMPLE, usedExample: true, error: e };
+      }
+    }
+
+    (async function init() {
+      try {
+        const { data } = await loadData();
+        DATA = data;
+
+        const projectSelect = document.getElementById('projectSelect');
+        const names = getProjectNames();
+        for (const n of names) {
+          const opt = document.createElement('option');
+          opt.value = n;
+          opt.textContent = n;
+          projectSelect.appendChild(opt);
+        }
+        if (!names.length) return;
+
+        projectSelect.value = names[0];
+        projectSelect.addEventListener('change', updateCharts);
+        document.getElementById('metricSelect').addEventListener('change', updateCharts);
+
+        updateCharts();
+      } catch (e) {
+        const errEl = document.getElementById('loadError');
+        errEl.style.display = 'block';
+        errEl.textContent =
+          'Не получилось загрузить данные.\n\n' +
+          String(e?.message || e) +
+          '\n\nПроверьте, что рядом лежит файл Catalog/daily-data.json.';
+      }
+    })();
+  </script>
+</body>
+</html>
+

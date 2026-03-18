@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <title>Сравнение февр-мар 2026 — Каталог</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
+  <style>
+    :root {
+      --bg: #0b1020;
+      --bg-card: #151a2c;
+      --accent1: #4f46e5;
+      --accent2: #f97316;
+      --accent3: #22c55e;
+      --text: #f9fafb;
+      --muted: #9ca3af;
+      --border: #1f2937;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      padding: 24px;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: radial-gradient(circle at top, #1e293b 0, #020617 55%);
+      color: var(--text);
+    }
+    h1 {
+      margin: 0 0 4px;
+      font-size: 26px;
+      font-weight: 600;
+    }
+    .subtitle {
+      color: var(--muted);
+      font-size: 13px;
+      margin-bottom: 20px;
+      line-height: 1.35;
+    }
+    a { color:#a5b4fc;text-decoration:none;border-bottom:1px dashed rgba(165,180,252,.5) }
+    .layout {
+      display: grid;
+      grid-template-columns: minmax(0, 2fr) minmax(0, 3fr);
+      gap: 20px;
+    }
+    @media (max-width: 1024px) {
+      .layout { grid-template-columns: minmax(0, 1fr); }
+    }
+    .card {
+      background: radial-gradient(circle at top left, #1f2937 0, #020617 70%);
+      border-radius: 16px;
+      border: 1px solid var(--border);
+      padding: 16px 18px;
+      box-shadow: 0 18px 45px rgba(0, 0, 0, 0.55);
+    }
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-bottom: 8px;
+      gap: 12px;
+    }
+    .card-title {
+      font-size: 14px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--muted);
+    }
+    .pill {
+      font-size: 11px;
+      padding: 2px 8px;
+      border-radius: 999px;
+      border: 1px solid rgba(148, 163, 184, 0.4);
+      color: var(--muted);
+      white-space: nowrap;
+    }
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+      margin-top: 8px;
+    }
+    .kpi {
+      padding: 10px 10px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, rgba(15, 23, 42, 0.9), rgba(15, 23, 42, 0.4));
+      border: 1px solid rgba(31, 41, 55, 0.9);
+    }
+    .kpi-label { font-size: 11px; color: var(--muted); margin-bottom: 4px; }
+    .kpi-value { font-size: 18px; font-weight: 600; }
+    .kpi-sub { font-size: 11px; color: var(--muted); margin-top: 2px; }
+    .kpi-up { color: #22c55e; }
+    .kpi-down { color: #f97316; }
+    .charts-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 16px;
+    }
+    .span-2 { grid-column: 1 / -1; }
+    @media (max-width: 900px) {
+      .charts-grid { grid-template-columns: minmax(0, 1fr); }
+    }
+    canvas { width: 100% !important; height: 260px !important; }
+  </style>
+</head>
+<body>
+  <header style="margin-bottom: 22px;">
+    <h1>Сравнение воронки (Каталог): февраль vs март 2026</h1>
+    <div class="subtitle">
+      Проекты: <strong>Сеосейлс</strong>, <strong>Kineiro</strong>, <strong>Урман Билд</strong>.
+      Источник: Google Sheets «Сравнение февр‑мар 2026» → «Сравнение Каталог».
+      · <a href="./dashboard-days.html">Дашборд по дням</a>
+      · <a href="./dashboard-urman-vr-mar.html">Урман vs Важное решение (март)</a>
+    </div>
+  </header>
+
+  <section class="layout">
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">Ключевые метрики по проектам</div>
+        <span class="pill">март 26 vs фев 26</span>
+      </div>
+
+      <div class="kpi-grid">
+        <!-- Сеосейлс -->
+        <div class="kpi">
+          <div class="kpi-label">Сеосейлс — лиды</div>
+          <div class="kpi-value">273</div>
+          <div class="kpi-sub">Февраль: 185 · <span class="kpi-up">+47,6%</span></div>
+        </div>
+        <div class="kpi">
+          <div class="kpi-label">Сеосейлс — % дозвонов</div>
+          <div class="kpi-value">41%</div>
+          <div class="kpi-sub">Февраль: 49% · <span class="kpi-down">-8 п.п.</span></div>
+        </div>
+        <div class="kpi">
+          <div class="kpi-label">Сеосейлс — презентации</div>
+          <div class="kpi-value">58</div>
+          <div class="kpi-sub">Февраль: 31 · <span class="kpi-up">+87,1%</span></div>
+        </div>
+
+        <!-- Kineiro -->
+        <div class="kpi">
+          <div class="kpi-label">Kineiro — лиды</div>
+          <div class="kpi-value">607</div>
+          <div class="kpi-sub">Февраль: 520 · <span class="kpi-up">+16,7%</span></div>
+        </div>
+        <div class="kpi">
+          <div class="kpi-label">Kineiro — % дозвонов</div>
+          <div class="kpi-value">48%</div>
+          <div class="kpi-sub">Февраль: 53% · <span class="kpi-down">-5 п.п.</span></div>
+        </div>
+        <div class="kpi">
+          <div class="kpi-label">Kineiro — презентации</div>
+          <div class="kpi-value">81</div>
+          <div class="kpi-sub">Февраль: 82 · <span class="kpi-down">-1,2%</span></div>
+        </div>
+
+        <!-- Урман Билд -->
+        <div class="kpi">
+          <div class="kpi-label">Урман Билд — лиды</div>
+          <div class="kpi-value">292</div>
+          <div class="kpi-sub">Февраль: 464 · <span class="kpi-down">-37,1%</span></div>
+        </div>
+        <div class="kpi">
+          <div class="kpi-label">Урман Билд — % дозвонов</div>
+          <div class="kpi-value">50%</div>
+          <div class="kpi-sub">Февраль: 56% · <span class="kpi-down">-6 п.п.</span></div>
+        </div>
+        <div class="kpi">
+          <div class="kpi-label">Урман Билд — презентации</div>
+          <div class="kpi-value">49</div>
+          <div class="kpi-sub">Февраль: 63 · <span class="kpi-down">-22,2%</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="charts-grid">
+      <div class="card span-2">
+        <div class="card-header"><div class="card-title">Объём лидов по проектам</div><span class="pill">Лиды (шт)</span></div>
+        <canvas id="leadsChart"></canvas>
+      </div>
+
+      <div class="card">
+        <div class="card-header"><div class="card-title">Дозвоны</div><span class="pill">Звонки &gt; 15 сек (шт)</span></div>
+        <canvas id="callsChart"></canvas>
+      </div>
+
+      <div class="card">
+        <div class="card-header"><div class="card-title">% дозваниваемости</div><span class="pill">Дозвоны / лиды</span></div>
+        <canvas id="contactChart"></canvas>
+      </div>
+
+      <div class="card">
+        <div class="card-header"><div class="card-title">Презентации по Б24</div><span class="pill">Презентации (шт)</span></div>
+        <canvas id="presentationsChart"></canvas>
+      </div>
+
+      <div class="card">
+        <div class="card-header"><div class="card-title">% презентаций от лидов</div><span class="pill">Презентации / лиды</span></div>
+        <canvas id="presentationsPctChart"></canvas>
+      </div>
+
+      <div class="card">
+        <div class="card-header"><div class="card-title">Квалифицированные лиды</div><span class="pill">Квал (шт)</span></div>
+        <canvas id="qualifiedChart"></canvas>
+      </div>
+
+      <div class="card">
+        <div class="card-header"><div class="card-title">% квалификации от лидов</div><span class="pill">Квал / лиды</span></div>
+        <canvas id="qualifiedPctChart"></canvas>
+      </div>
+    </div>
+  </section>
+
+  <script>
+    Chart.register(ChartDataLabels);
+
+    // Итоги из таблицы (Каталог)
+    const seoLeadsMar = 273, seoLeadsFeb = 185;
+    const seoCallsMar = 113, seoCallsFeb = 91;
+    const seoContactMar = 41, seoContactFeb = 49;
+    const seoPresMar = 58, seoPresFeb = 31;
+    const seoPresPctMar = 21, seoPresPctFeb = 17;
+    const seoKvalMar = 25, seoKvalFeb = 17;
+
+    const kinLeadsMar = 607, kinLeadsFeb = 520;
+    const kinCallsMar = 292, kinCallsFeb = 274;
+    const kinContactMar = 48, kinContactFeb = 53;
+    const kinPresMar = 81, kinPresFeb = 82;
+    const kinPresPctMar = 13, kinPresPctFeb = 16;
+    const kinKvalMar = 36, kinKvalFeb = 53;
+
+    const urbLeadsMar = 292, urbLeadsFeb = 464;
+    const urbCallsMar = 147, urbCallsFeb = 260;
+    const urbContactMar = 50, urbContactFeb = 56;
+    const urbPresMar = 49, urbPresFeb = 63;
+    const urbPresPctMar = 17, urbPresPctFeb = 14;
+    const urbKvalMar = 19, urbKvalFeb = 29;
+
+    const labelsProjects = ['Сеосейлс', 'Kineiro', 'Урман Билд'];
+    const pct = (num, den) => den ? (num / den) * 100 : 0;
+
+    const baseOptions = {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { labels: { color: '#e5e7eb', font: { size: 11 } } },
+        tooltip: {
+          backgroundColor: 'rgba(15,23,42,0.95)',
+          borderColor: 'rgba(55,65,81,1)',
+          borderWidth: 1,
+          titleColor: '#e5e7eb',
+          bodyColor: '#e5e7eb',
+          padding: 8
+        },
+        datalabels: {
+          color: '#e5e7eb',
+          anchor: 'end',
+          align: 'end',
+          offset: -2,
+          font: { size: 10, weight: '500' },
+          formatter: (value) => value
+        }
+      },
+      scales: {
+        x: { ticks: { color: '#9ca3af', font: { size: 11 } }, grid: { color: 'rgba(31,41,55,0.5)' } },
+        y: { ticks: { color: '#9ca3af', font: { size: 11 } }, grid: { color: 'rgba(31,41,55,0.5)' } }
+      }
+    };
+
+    new Chart(document.getElementById('leadsChart'), {
+      type: 'bar',
+      data: {
+        labels: labelsProjects,
+        datasets: [
+          { label: 'Лиды · март 26', data: [seoLeadsMar, kinLeadsMar, urbLeadsMar], backgroundColor: 'rgba(79,70,229,0.9)', borderColor: 'rgba(129,140,248,1)', borderWidth: 1.2, borderRadius: 6 },
+          { label: 'Лиды · фев 26', data: [seoLeadsFeb, kinLeadsFeb, urbLeadsFeb], backgroundColor: 'rgba(249,115,22,0.7)', borderColor: 'rgba(253,186,116,1)', borderWidth: 1.2, borderRadius: 6 }
+        ]
+      },
+      options: { ...baseOptions, plugins: { ...baseOptions.plugins, datalabels: { ...baseOptions.plugins.datalabels, formatter: (v) => v.toLocaleString('ru-RU') } }, scales: { ...baseOptions.scales, y: { ...baseOptions.scales.y, beginAtZero: true } } }
+    });
+
+    new Chart(document.getElementById('callsChart'), {
+      type: 'bar',
+      data: {
+        labels: labelsProjects,
+        datasets: [
+          { label: 'Дозвоны · март 26', data: [seoCallsMar, kinCallsMar, urbCallsMar], backgroundColor: 'rgba(79,70,229,0.9)', borderColor: 'rgba(129,140,248,1)', borderWidth: 1.2, borderRadius: 6 },
+          { label: 'Дозвоны · фев 26', data: [seoCallsFeb, kinCallsFeb, urbCallsFeb], backgroundColor: 'rgba(249,115,22,0.7)', borderColor: 'rgba(253,186,116,1)', borderWidth: 1.2, borderRadius: 6 }
+        ]
+      },
+      options: { ...baseOptions, plugins: { ...baseOptions.plugins, datalabels: { ...baseOptions.plugins.datalabels, formatter: (v) => v.toLocaleString('ru-RU') } }, scales: { ...baseOptions.scales, y: { ...baseOptions.scales.y, beginAtZero: true } } }
+    });
+
+    new Chart(document.getElementById('contactChart'), {
+      type: 'bar',
+      data: {
+        labels: labelsProjects,
+        datasets: [
+          { label: '% дозвонов · март 26', data: [seoContactMar, kinContactMar, urbContactMar], backgroundColor: 'rgba(59,130,246,0.9)', borderColor: 'rgba(96,165,250,1)', borderWidth: 1.2, borderRadius: 6 },
+          { label: '% дозвонов · фев 26', data: [seoContactFeb, kinContactFeb, urbContactFeb], backgroundColor: 'rgba(248,113,113,0.8)', borderColor: 'rgba(252,165,165,1)', borderWidth: 1.2, borderRadius: 6 }
+        ]
+      },
+      options: { ...baseOptions, plugins: { ...baseOptions.plugins, datalabels: { ...baseOptions.plugins.datalabels, formatter: (v) => v + '%' } }, scales: { ...baseOptions.scales, y: { ...baseOptions.scales.y, beginAtZero: true, max: 100, ticks: { ...baseOptions.scales.y.ticks, callback: v => v + '%' } } } }
+    });
+
+    new Chart(document.getElementById('presentationsChart'), {
+      type: 'bar',
+      data: {
+        labels: labelsProjects,
+        datasets: [
+          { label: 'Презентации · март 26', data: [seoPresMar, kinPresMar, urbPresMar], backgroundColor: 'rgba(34,197,94,0.9)', borderColor: 'rgba(74,222,128,1)', borderWidth: 1.2, borderRadius: 6 },
+          { label: 'Презентации · фев 26', data: [seoPresFeb, kinPresFeb, urbPresFeb], backgroundColor: 'rgba(22,163,74,0.6)', borderColor: 'rgba(134,239,172,1)', borderWidth: 1.2, borderRadius: 6 }
+        ]
+      },
+      options: { ...baseOptions, plugins: { ...baseOptions.plugins, datalabels: { ...baseOptions.plugins.datalabels, formatter: (v) => v.toLocaleString('ru-RU') } }, scales: { ...baseOptions.scales, y: { ...baseOptions.scales.y, beginAtZero: true } } }
+    });
+
+    new Chart(document.getElementById('presentationsPctChart'), {
+      type: 'bar',
+      data: {
+        labels: labelsProjects,
+        datasets: [
+          { label: '% презентаций · март 26', data: [seoPresPctMar, kinPresPctMar, urbPresPctMar], backgroundColor: 'rgba(244,114,182,0.9)', borderColor: 'rgba(251,207,232,1)', borderWidth: 1.2, borderRadius: 6 },
+          { label: '% презентаций · фев 26', data: [seoPresPctFeb, kinPresPctFeb, urbPresPctFeb], backgroundColor: 'rgba(217,70,239,0.7)', borderColor: 'rgba(233,213,255,1)', borderWidth: 1.2, borderRadius: 6 }
+        ]
+      },
+      options: { ...baseOptions, plugins: { ...baseOptions.plugins, datalabels: { ...baseOptions.plugins.datalabels, formatter: (v) => v + '%' } }, scales: { ...baseOptions.scales, y: { ...baseOptions.scales.y, beginAtZero: true, max: 100, ticks: { ...baseOptions.scales.y.ticks, callback: v => v + '%' } } } }
+    });
+
+    new Chart(document.getElementById('qualifiedChart'), {
+      type: 'bar',
+      data: {
+        labels: labelsProjects,
+        datasets: [
+          { label: 'Квал · март 26', data: [seoKvalMar, kinKvalMar, urbKvalMar], backgroundColor: 'rgba(56,189,248,0.9)', borderColor: 'rgba(125,211,252,1)', borderWidth: 1.2, borderRadius: 6 },
+          { label: 'Квал · фев 26', data: [seoKvalFeb, kinKvalFeb, urbKvalFeb], backgroundColor: 'rgba(14,165,233,0.7)', borderColor: 'rgba(186,230,253,1)', borderWidth: 1.2, borderRadius: 6 }
+        ]
+      },
+      options: { ...baseOptions, plugins: { ...baseOptions.plugins, datalabels: { ...baseOptions.plugins.datalabels, formatter: (v) => v.toLocaleString('ru-RU') } }, scales: { ...baseOptions.scales, y: { ...baseOptions.scales.y, beginAtZero: true } } }
+    });
+
+    new Chart(document.getElementById('qualifiedPctChart'), {
+      type: 'bar',
+      data: {
+        labels: labelsProjects,
+        datasets: [
+          { label: '% квал · март 26', data: [pct(seoKvalMar, seoLeadsMar), pct(kinKvalMar, kinLeadsMar), pct(urbKvalMar, urbLeadsMar)], backgroundColor: 'rgba(56,189,248,0.9)', borderColor: 'rgba(125,211,252,1)', borderWidth: 1.2, borderRadius: 6 },
+          { label: '% квал · фев 26', data: [pct(seoKvalFeb, seoLeadsFeb), pct(kinKvalFeb, kinLeadsFeb), pct(urbKvalFeb, urbLeadsFeb)], backgroundColor: 'rgba(14,165,233,0.7)', borderColor: 'rgba(186,230,253,1)', borderWidth: 1.2, borderRadius: 6 }
+        ]
+      },
+      options: { ...baseOptions, plugins: { ...baseOptions.plugins, datalabels: { ...baseOptions.plugins.datalabels, formatter: (v) => (Math.round(v * 10) / 10).toString().replace('.', ',') + '%' } }, scales: { ...baseOptions.scales, y: { ...baseOptions.scales.y, beginAtZero: true, max: 30, ticks: { ...baseOptions.scales.y.ticks, callback: v => v + '%' } } } }
+    });
+  </script>
+</body>
+</html>
+
